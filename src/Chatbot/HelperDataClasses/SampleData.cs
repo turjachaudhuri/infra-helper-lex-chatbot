@@ -31,5 +31,20 @@ namespace Chatbot.HelperDataClasses
                               "I can stop an AWS instance for you . Ask me : stop QA",
                               "I can terminate an AWS instance for you . Ask me : terminate PROD"
                           });
+
+        public static Dictionary<string, string> AMI_DICT = new Dictionary<string, string>
+                {
+                    {"ubuntu", "ami-0ac019f4fcb7cb7e6"},
+                    {"redhat", "ami-6871a115"},
+                    {"windows", "ami-01945499792201081"},
+                    {"amazonlinux", "ami-04681a1dbd79675a5"}
+                };
+
+        public static Dictionary<string, string> INSTANC_TYPE_DICT = new Dictionary<string, string>
+                {
+                    {"t2micro", "t2.micro"},
+                    {"t2small", "t2.small"},
+                    {"t2medium", "t2.medium"}
+                };
     }
 }

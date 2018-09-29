@@ -58,6 +58,9 @@ namespace InfraHelperChatbot
                     case "Helper":
                         process = new HelperIntentProcessor();
                         break;
+                    case "LaunchInstance":
+                        process = new LaunchIntentProcessor(IsLocalDebug);
+                        break;
                     default:
                         throw new Exception($"Intent with name {lexEvent.CurrentIntent.Name} not supported");
                 }

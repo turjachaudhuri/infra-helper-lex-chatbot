@@ -6,7 +6,7 @@ using Amazon.Runtime.CredentialManagement;
 using Chatbot.HelperDataClasses;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Chatbot.HelperClasses
 {
@@ -61,12 +61,13 @@ namespace Chatbot.HelperClasses
         }
 
         public InstanceRequest InstanceRequestObj { get; set; }
+        public InstanceSetup LaunchRequest { get; set; }
         public AmazonEC2Client Ec2Client { get; set; }
         public bool IsLocalDebug { get; set; }
 
-        public InstanceRequest ServerOperation(ILambdaContext context , ref bool actionSucceeded , ref string actionMessage)
+        public InstanceRequest ServerOperation(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
         {
-            switch(InstanceRequestObj.InstanceAction.ToLower())
+            switch (InstanceRequestObj.InstanceAction.ToLower())
             {
                 case "start":
                     StartInstance(context, ref actionSucceeded, ref actionMessage);
@@ -86,7 +87,7 @@ namespace Chatbot.HelperClasses
 
         private void TerminateInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
         {
-            if (InstanceRequestObj.InstanceState.ToLower() != "running" && InstanceRequestObj.InstanceState.ToLower()!= "stopped")
+            if (InstanceRequestObj.InstanceState.ToLower() != "running" && InstanceRequestObj.InstanceState.ToLower() != "stopped")
             {
                 actionSucceeded = false;
                 actionMessage = $"The instance {InstanceRequestObj.InstanceName} is currently in {InstanceRequestObj.InstanceState} state , and cannot be terminated at this time.";
@@ -116,7 +117,7 @@ namespace Chatbot.HelperClasses
             }
         }
 
-        private void DescribeInstance(ILambdaContext context , ref bool actionSucceeded, ref string actionMessage)
+        private void DescribeInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
         {
             try
             {
@@ -127,7 +128,7 @@ namespace Chatbot.HelperClasses
                 actionSucceeded = true;
                 actionMessage = $"Your instance {InstanceRequestObj.InstanceName} is currently in {InstanceRequestObj.InstanceState} state.";
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 context.Logger.LogLine($"ServerOperationsHelper::DescribeInstance {ex.Message}");
                 context.Logger.LogLine($"ServerOperationsHelper::DescribeInstance {ex.StackTrace}");
@@ -147,9 +148,9 @@ namespace Chatbot.HelperClasses
                 {
                     foreach (Tag tag in instance.Tags)
                     {
-                        instanceRequestList.Add( 
+                        instanceRequestList.Add(
                                     new InstanceRequest(
-                                                        !String.IsNullOrEmpty(tag.Value)? tag.Value: instance.InstanceId,
+                                                        !String.IsNullOrEmpty(tag.Value) ? tag.Value : instance.InstanceId,
                                                         string.Empty,
                                                         instance.InstanceId,
                                                         instance.State.Name.Value
@@ -161,7 +162,7 @@ namespace Chatbot.HelperClasses
             return instanceRequestList;
         }
 
-        public void StopInstance(ILambdaContext context , ref bool actionSucceeded, ref string actionMessage)
+        public void StopInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
         {
             if (InstanceRequestObj.InstanceState.ToLower() != "running")
             {
@@ -193,9 +194,9 @@ namespace Chatbot.HelperClasses
             }
         }
 
-        public void StartInstance(ILambdaContext context , ref bool actionSucceeded, ref string actionMessage)
+        public void StartInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
         {
-            if(InstanceRequestObj.InstanceState.ToLower() != "stopped")
+            if (InstanceRequestObj.InstanceState.ToLower() != "stopped")
             {
                 actionSucceeded = false;
                 actionMessage = $"The instance {InstanceRequestObj.InstanceName} is currently in {InstanceRequestObj.InstanceState} state , and cannot be started at this time.";
@@ -207,7 +208,7 @@ namespace Chatbot.HelperClasses
             };
 
             try
-            {                
+            {
                 StartInstancesResponse response = Ec2Client.StartInstancesAsync(request).GetAwaiter().GetResult();
                 foreach (InstanceStateChange item in response.StartingInstances)
                 {
@@ -224,6 +225,144 @@ namespace Chatbot.HelperClasses
                 actionSucceeded = false;
                 actionMessage = $"Could not start {InstanceRequestObj.InstanceName} . Please contact your administrator.";
             }
+        }
+
+
+        public bool CheckKeyPair(string keyPairName)
+        {
+            var dkpRequest = new DescribeKeyPairsRequest();
+            var dkpResponse = Ec2Client.DescribeKeyPairsAsync(dkpRequest).GetAwaiter().GetResult();
+            List<KeyPairInfo> myKeyPairs = dkpResponse.KeyPairs;
+
+            return myKeyPairs.Find(x => x.KeyName == keyPairName) != null;
+        }
+
+        public bool CreateKeyPair(string keyPairName)
+        {
+            if (!CheckKeyPair(keyPairName))
+            {
+                var newKeyRequest = new CreateKeyPairRequest()
+                {
+                    KeyName = keyPairName
+                };
+                var ckpResponse = Ec2Client.CreateKeyPairAsync(newKeyRequest).GetAwaiter().GetResult();
+
+                /*
+                // Save the private key in a .pem file
+                using (FileStream s = new FileStream(keyPairName + ".pem", FileMode.Create))
+                using (StreamWriter writer = new StreamWriter(s))
+                {
+                    writer.WriteLine(ckpResponse.KeyPair.KeyMaterial);
+                }
+                */
+
+                return true;
+            }
+            return false;
+        }
+
+        public List<string> getAvailabilityZones(ILambdaContext context)
+        {
+            try
+            {
+                DescribeAvailabilityZonesResponse AZresponse = Ec2Client.DescribeAvailabilityZonesAsync().GetAwaiter().GetResult();
+                return AZresponse.AvailabilityZones.ConvertAll(x => x.ZoneName);
+            }
+            catch (Exception ex)
+            {
+                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.Message}");
+                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.StackTrace}");
+            }
+            return new List<string>();
+        }
+
+
+        internal void LaunchServer(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        {
+            try
+            {
+                LaunchRequest.KeyPairName = $"KeyPair-{Guid.NewGuid().ToString()}";
+                while (!CreateKeyPair(LaunchRequest.KeyPairName))
+                {
+                    LaunchRequest.KeyPairName = Guid.NewGuid().ToString();
+                }
+
+                DescribeVpcsRequest vpcRequest = new DescribeVpcsRequest();
+                DescribeVpcsResponse vpcResponse = Ec2Client.DescribeVpcsAsync(vpcRequest).GetAwaiter().GetResult();
+
+                Vpc defaultVPC = vpcResponse.Vpcs.Find(x => x.IsDefault); //get the default vpc
+
+                List<Filter> subnetFilter = new List<Filter>()
+                {
+                    new Filter(){ Name = "availability-zone", Values = new List<string>() { LaunchRequest.AvailabilityZone }},
+                    new Filter(){ Name = "vpc-id", Values = new List<string>() { defaultVPC.VpcId }}
+                };
+
+                DescribeSubnetsRequest subnetRequest = new DescribeSubnetsRequest();
+                subnetRequest.Filters = subnetFilter;
+                DescribeSubnetsResponse subnetResponse = Ec2Client.DescribeSubnetsAsync(subnetRequest).GetAwaiter().GetResult();
+                Subnet defaultSubnet = subnetResponse.Subnets.FirstOrDefault();
+
+                Filter SGFilter = new Filter
+                {
+                    Name = "vpc-id",
+                    Values = new List<string>() { defaultVPC.VpcId }
+                };
+
+                DescribeSecurityGroupsRequest SGrequest = new DescribeSecurityGroupsRequest();
+                SGrequest.Filters.Add(SGFilter);
+                DescribeSecurityGroupsResponse SGresponse = Ec2Client.DescribeSecurityGroupsAsync(SGrequest).GetAwaiter().GetResult();
+                SecurityGroup defaultSG = SGresponse.SecurityGroups.FirstOrDefault();
+
+                InstanceNetworkInterfaceSpecification defaultENI = new InstanceNetworkInterfaceSpecification()
+                {
+                    DeviceIndex = 0,
+                    SubnetId = defaultSubnet.SubnetId,
+                    Groups = new List<string>() { defaultSG.GroupId },
+                    AssociatePublicIpAddress = true
+                };
+
+                List<InstanceNetworkInterfaceSpecification> enis = new List<InstanceNetworkInterfaceSpecification>() { defaultENI };
+
+                var launchRequest = new RunInstancesRequest()
+                {
+                    ImageId = GetImageID(LaunchRequest.AMIType),
+                    InstanceType = GetActualInstanceType(LaunchRequest.InstanceType),
+                    MinCount = LaunchRequest.NumOfInstances,
+                    MaxCount = LaunchRequest.NumOfInstances,
+                    KeyName = LaunchRequest.KeyPairName,
+                    NetworkInterfaces = enis
+                };
+
+                RunInstancesResponse launchResponse = Ec2Client.RunInstancesAsync(launchRequest).GetAwaiter().GetResult();
+
+                List<String> instanceIds = new List<string>();
+                foreach (Instance instance in launchResponse.Reservation.Instances)
+                {
+                    Console.WriteLine(instance.InstanceId);
+                    instanceIds.Add(instance.InstanceId);
+                }
+
+                actionSucceeded = true;
+                actionMessage = $"The instance has been launched. Please check the AWS Console to verify.";
+            }
+            catch (Exception ex)
+            {
+                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.Message}");
+                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.StackTrace}");
+                actionSucceeded = false;
+                actionMessage = $"Could not start {InstanceRequestObj.InstanceName} . Please contact your administrator.";
+            }
+        }
+
+        private string GetImageID(string AMIType)
+        {
+            return SampleData.AMI_DICT.GetValueOrDefault(AMIType.ToLower());
+        }
+
+        private string GetActualInstanceType(string InstanceType)
+        {
+            return SampleData.INSTANC_TYPE_DICT.GetValueOrDefault(InstanceType.ToLower());
         }
     }
 }

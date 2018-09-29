@@ -124,13 +124,15 @@ namespace Chatbot.IntentProcessors
                 else if (string.Equals(lexEvent.CurrentIntent.ConfirmationStatus, "Denied", StringComparison.Ordinal))
                 {
                     sessionAttributes.Remove(Constants.CURRENT_REQUEST);
+                    sessionAttributes.Remove(Constants.PREVIOUS_REQUEST);
+
                     return Close(
                                 sessionAttributes,
                                 "Fulfilled",
                                 new LexResponse.LexMessage
                                 {
                                     ContentType = Constants.MESSAGE_CONTENT_TYPE,
-                                    Content = "Current request has been cancelled . Please start a new request if need be."
+                                    Content = "Current request has been cancelled . Please start a brand new request if need be."
                                 }
                             );
                 }

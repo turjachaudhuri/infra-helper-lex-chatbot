@@ -1,20 +1,69 @@
 {
-	"MessageVersion": "1.0",
-	"InvocationSource": "FulfillmentCodeHook",
-	"UserId": "amafisheo5xylrce729l1fyuyf375i42",
-	"InputTranscript": "list instances",
-	"SessionAttributes": {},
-	"RequestAttributes": null,
-	"Bot": {
-		"Name": "InfraHelper",
-		"Alias": "$LATEST",
-		"Version": "$LATEST"
-	},
-	"OutputDialogMode": "Text",
-	"CurrentIntent": {
-		"Name": "DescribeInstances",
-		"Slots": {},
-		"SlotDetails": {},
-		"ConfirmationStatus": "None"
-	}
+    "MessageVersion": "1.0",
+    "InvocationSource": "DialogCodeHook",
+    "UserId": "u3ya5bqalh9t7rgiskb2kw3jub1af10z",
+    "InputTranscript": "yes",
+    "SessionAttributes": {
+        "currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"AMIType\":\"Ubuntu\",\"InstanceType\":\"t2micro\",\"NumOfInstances\":1,\"StorageType\":\"Magnetic\",\"AvailabilityZone\":\"us-east-1a\"}"
+    },
+    "RequestAttributes": null,
+    "Bot": {
+        "Name": "InfraHelper",
+        "Alias": "$LATEST",
+        "Version": "$LATEST"
+    },
+    "OutputDialogMode": "Text",
+    "CurrentIntent": {
+        "Name": "LaunchInstance",
+        "Slots": {
+            "AvailabilityZones": "us-east-1a",
+            "InstanceTypes": "t2micro",
+            "NumberTypes": "1",
+            "AMI": "Ubuntu",
+            "StorageTypes": "Magnetic"
+        },
+					"SlotDetails": {
+						"AvailabilityZones": {
+							"Resolutions": [
+								{
+									"value": "us-east-1a"
+								},
+								{
+									"value": "us-east-1b"
+								},
+								{
+									"value": "us-east-1c"
+								},
+								{
+									"value": "us-east-1e"
+								}
+							]
+						},
+						"InstanceTypes": {
+							"Resolutions": [
+								{
+									"value": "t2micro"
+								}
+							]
+						},
+						"NumberTypes": {
+							"Resolutions": []
+						},
+						"AMI": {
+							"Resolutions": [
+								{
+									"value": "Ubuntu"
+								}
+							]
+						},
+						"StorageTypes": {
+							"Resolutions": [
+								{
+									"value": "Magnetic"
+								}
+							]
+						}
+					},
+        "ConfirmationStatus": "Confirmed"
+    }
 }
