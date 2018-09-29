@@ -1,0 +1,38 @@
+{
+    "MessageVersion": "1.0",
+    "InvocationSource": "FulfillmentCodeHook",
+    "UserId": "hxu0xinnjgcrgiwdv2ehfebw8k30h6nd",
+    "InputTranscript": "I want to STOP DEV",
+    "SessionAttributes": {},
+    "RequestAttributes": null,
+    "Bot": {
+        "Name": "InfraHelper",
+        "Alias": "$LATEST",
+        "Version": "$LATEST"
+    },
+    "OutputDialogMode": "Text",
+    "CurrentIntent": {
+        "Name": "StartServer",
+        "Slots": {
+            "action": "STOP",
+            "serverName": "DEV"
+        },
+        "SlotDetails": {
+            "action": {
+													"Resolutions": [
+														{
+															"value": "STOP"
+														}
+													]
+            },
+            "serverName": {
+                "Resolutions": [
+                    {
+                        "value": "DEV"
+                    }
+                ]
+            }
+        },
+        "ConfirmationStatus": "None"
+    }
+}
