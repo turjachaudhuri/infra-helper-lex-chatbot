@@ -40,7 +40,7 @@ namespace Chatbot.IntentProcessors
 
             InstanceSetup previousLaunchRequest = null;
 
-            if (sessionAttributes.ContainsKey(Constants.PREVIOUS_REQUEST))
+            if (sessionAttributes.ContainsKey(Constants.PREVIOUS_SETUP_REQUEST))
             {
                 previousLaunchRequest = DeserializeLaunchRequest(sessionAttributes[Constants.PREVIOUS_SETUP_REQUEST]);
             }

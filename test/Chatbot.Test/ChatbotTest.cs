@@ -114,5 +114,19 @@ namespace InfraHelperChatbot.Tests
 
             Assert.Equal("ElicitSlot", response.DialogAction.Type);
         }
+
+        [Fact]
+        public void TestLaunchInstanceStartEvent()
+        {
+            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceStartEvent.json");
+
+            var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
+            var lambdaFunction = new ChatbotStartupProgram(true);
+
+            var context = new TestLambdaContext();
+            var response = lambdaFunction.LambdaFunctionHandler(lexEvent, context);
+
+            Assert.Equal("ElicitSlot", response.DialogAction.Type);
+        }
     }
 }
