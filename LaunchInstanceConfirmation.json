@@ -1,0 +1,69 @@
+{
+	"MessageVersion": "1.0",
+	"InvocationSource": "DialogCodeHook",
+	"UserId": "bl71h5zlgqfgwejsmfsh84ycjn4zvpry",
+	"InputTranscript": "yes",
+	"SessionAttributes": {
+		"currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"AMIType\":\"Ubuntu\",\"InstanceType\":\"t2micro\",\"NumOfInstances\":1,\"StorageType\":\"General purpose\",\"AvailabilityZone\":\"us-east-1a\"}"
+	},
+	"RequestAttributes": null,
+	"Bot": {
+		"Name": "InfraHelper",
+		"Alias": "$LATEST",
+		"Version": "$LATEST"
+	},
+	"OutputDialogMode": "Text",
+	"CurrentIntent": {
+		"Name": "LaunchInstance",
+		"Slots": {
+			"AvailabilityZones": "us-east-1a",
+			"InstanceTypes": "t2micro",
+			"NumberTypes": "1",
+			"AMI": "Ubuntu",
+			"StorageTypes": "General purpose"
+		},
+		"SlotDetails": {
+			"AvailabilityZones": {
+				"Resolutions": [
+					{
+						"value": "us-east-1a"
+					},
+					{
+						"value": "us-east-1b"
+					},
+					{
+						"value": "us-east-1c"
+					},
+					{
+						"value": "us-east-1e"
+					}
+				]
+			},
+			"InstanceTypes": {
+				"Resolutions": [
+					{
+						"value": "t2micro"
+					}
+				]
+			},
+			"NumberTypes": {
+				"Resolutions": []
+			},
+			"AMI": {
+				"Resolutions": [
+					{
+						"value": "Ubuntu"
+					}
+				]
+			},
+			"StorageTypes": {
+				"Resolutions": [
+					{
+						"value": "General purpose"
+					}
+				]
+			}
+		},
+		"ConfirmationStatus": "Confirmed"
+	}
+}

@@ -12,6 +12,7 @@
     <PackageReference Include="Amazon.Lambda.LexEvents" Version="1.0.2" />
     <PackageReference Include="Amazon.Lambda.Serialization.Json" Version="1.1.0" />
     <PackageReference Include="AWSSDK.EC2" Version="3.3.63.1" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.24.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

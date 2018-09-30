@@ -1,0 +1,20 @@
+{
+	"MessageVersion": "1.0",
+	"InvocationSource": "FulfillmentCodeHook",
+	"UserId": "xcekrk5d2l64eeie2mdgjkoa0d376oac",
+	"InputTranscript": "list instances",
+	"SessionAttributes": {},
+	"RequestAttributes": null,
+	"Bot": {
+		"Name": "InfraHelper",
+		"Alias": "$LATEST",
+		"Version": "$LATEST"
+	},
+	"OutputDialogMode": "Text",
+	"CurrentIntent": {
+		"Name": "DescribeInstances",
+		"Slots": {},
+		"SlotDetails": {},
+		"ConfirmationStatus": "None"
+	}
+}

@@ -14,25 +14,21 @@ namespace Chatbot.IntentProcessors
         private bool IsLocalDebug { get; set; }
         private ServerOperationsHelper serverOperationsHelper = null;
         private IDictionary<string, string> sessionAttributes = new Dictionary<string, string>();
+        private ILambdaContext context;
 
-        public LaunchIntentProcessor()
-        {
-            this.IsLocalDebug = false;
-            Setup();
-        }
-
-        public LaunchIntentProcessor(bool isLocalDebug)
+        public LaunchIntentProcessor(bool isLocalDebug , ILambdaContext context)
         {
             this.IsLocalDebug = isLocalDebug;
+            this.context = context;
             Setup();
         }
 
         private void Setup()
         {
-            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug);
+            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug , context);
         }
 
-        public override LexResponse Process(LexEvent lexEvent, ILambdaContext context)
+        public override LexResponse Process(LexEvent lexEvent)
         {
             bool actionSucceeded = false;
             string actionResponseMessage = string.Empty;
@@ -67,12 +63,12 @@ namespace Chatbot.IntentProcessors
             {
                 // If any slots are invalid, re-elicit for their value
                 TryInferSlots(instanceLaunchRequest, previousLaunchRequest);
-                ValidationResult validateResult = Validate(instanceLaunchRequest , context);
+                ValidationResult validateResult = Validate(instanceLaunchRequest);
                 if (!validateResult.IsValid)
                 {
                     lexEvent.CurrentIntent.Slots[validateResult.ViolationSlot] = null;
                     return ElicitSlot(sessionAttributes, lexEvent.CurrentIntent.Name, lexEvent.CurrentIntent.Slots,
-                                      validateResult.ViolationSlot, validateResult.Message);
+                                      validateResult.ViolationSlot, validateResult.Message , validateResult.ResponseCard);
                 }
                 //This means that the slots are valid
 
@@ -94,15 +90,15 @@ namespace Chatbot.IntentProcessors
                                     new LexResponse.LexMessage
                                     {
                                         ContentType = Constants.MESSAGE_CONTENT_TYPE,
-                                        Content = $"Are you sure you want to launch {instanceLaunchRequest.NumOfInstances.ToString()} instance(s) with AMI - {instanceLaunchRequest.AMIType} " +
-                                                  $", Instance Type - {instanceLaunchRequest.InstanceType} , Storage Type - {instanceLaunchRequest.StorageType} ?"
+                                        Content = $"Are you sure you want to launch {instanceLaunchRequest.NumOfInstances.ToString()} instance(s) with \n AMI - {instanceLaunchRequest.AMIType} " +
+                                                  $"\n Instance Type - {instanceLaunchRequest.InstanceType} and \n Storage Type - {instanceLaunchRequest.StorageType} ?"
                                                                 
                                     }
                                 );
                 }
                 else if (string.Equals(lexEvent.CurrentIntent.ConfirmationStatus, "Confirmed", StringComparison.Ordinal))
                 {
-                    OperateAWSServer(instanceLaunchRequest, context, ref actionSucceeded, ref actionResponseMessage);
+                    OperateAWSServer(instanceLaunchRequest, ref actionSucceeded, ref actionResponseMessage);
                     sessionAttributes.Remove(Constants.CURRENT_SETUP_REQUEST);
                     sessionAttributes[Constants.PREVIOUS_SETUP_REQUEST] = SerializeLaunchRequest(instanceLaunchRequest);
 
@@ -113,12 +109,14 @@ namespace Chatbot.IntentProcessors
                             {
                                 ContentType = Constants.MESSAGE_CONTENT_TYPE,
                                 Content = actionResponseMessage
-                            }
+                            },
+                            null
                         );
                 }
                 else if (string.Equals(lexEvent.CurrentIntent.ConfirmationStatus, "Denied", StringComparison.Ordinal))
                 {
-                    sessionAttributes.Remove(Constants.CURRENT_REQUEST);
+                    sessionAttributes.Remove(Constants.CURRENT_SETUP_REQUEST);
+                    sessionAttributes.Remove(Constants.PREVIOUS_SETUP_REQUEST);
                     return Close(
                                 sessionAttributes,
                                 "Fulfilled",
@@ -126,7 +124,8 @@ namespace Chatbot.IntentProcessors
                                 {
                                     ContentType = Constants.MESSAGE_CONTENT_TYPE,
                                     Content = "Current request has been cancelled . Please start a new request if need be."
-                                }
+                                },
+                                null
                             );
                 }
             }
@@ -152,26 +151,28 @@ namespace Chatbot.IntentProcessors
             }
         }
 
-        private ValidationResult Validate(InstanceSetup instanceLaunchRequest , ILambdaContext context)
+        private ValidationResult Validate(InstanceSetup instanceLaunchRequest)
         {
             if (string.IsNullOrEmpty(instanceLaunchRequest.AMIType))
             {
                 return new ValidationResult(false, Constants.AMI_SLOT,
-                    $"Please enter the AMI you want to use . I currently support the following : {TypeValidators.ListOfValidAMITypes()} ");
+                    $"Please enter the AMI you want to use . I currently support the following : \n {TypeValidators.ListOfValidAMITypes()} " ,
+                    createResponseCard(Constants.AMI_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.AMIType) && !TypeValidators.IsValidAMIType(instanceLaunchRequest.AMIType))
             {
                 return new ValidationResult(false, Constants.AMI_SLOT,
                     $"We currently do not support {instanceLaunchRequest.AMIType} as a valid AMI ." +
                     $"Can you try an AMI out of the following ones ?" +
-                    TypeValidators.ListOfValidAMITypes()
-                        );
+                    TypeValidators.ListOfValidAMITypes() ,
+                    createResponseCard(Constants.AMI_SLOT)
+                                            );
             }
 
             if (string.IsNullOrEmpty(instanceLaunchRequest.StorageType))
             {
                 return new ValidationResult(false, Constants.STORAGE_TYPE_SLOT,
-                    $"Please enter the Storage type you want to use . I currently support the following : {TypeValidators.ListOfValidStorageTypes()}");
+                    $"Please enter the Storage type you want to use . I currently support the following : \n {TypeValidators.ListOfValidStorageTypes()}");
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.StorageType) && !TypeValidators.IsValidStorageType(instanceLaunchRequest.StorageType))
             {
@@ -185,47 +186,114 @@ namespace Chatbot.IntentProcessors
             if (string.IsNullOrEmpty(instanceLaunchRequest.InstanceType))
             {
                 return new ValidationResult(false, Constants.INSTANCE_TYPE_SLOT,
-                    $"Please enter the Instance type you want to use . I currently support the following : {TypeValidators.ListOfValidInstanceTypes()}");
+                    $"Please enter the Instance type you want to use . I currently support the following : \n {TypeValidators.ListOfValidInstanceTypes()}" ,
+                    createResponseCard(Constants.INSTANCE_TYPE_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.InstanceType) && !TypeValidators.IsValidInstanceType(instanceLaunchRequest.InstanceType))
             {
                 return new ValidationResult(false, Constants.INSTANCE_TYPE_SLOT,
                     $"We currently do not support {instanceLaunchRequest.InstanceType} as a valid Instance Type ." +
-                    $"Can you try a Instance Type out of the following ones ? {TypeValidators.ListOfValidInstanceTypes()}"
-                        );
+                    $"Can you try a Instance Type out of the following ones ? {TypeValidators.ListOfValidInstanceTypes()}",
+                        createResponseCard(Constants.INSTANCE_TYPE_SLOT));
             }
 
             if (string.IsNullOrEmpty(instanceLaunchRequest.AvailabilityZone))
             {
                 return new ValidationResult(false, Constants.AZ_SLOT,
-                    $"Please enter the AZ you want to use . List of AZ(s) for your region are - : {string.Join(" , ",serverOperationsHelper.getAvailabilityZones(context))}");
+                    $"Please enter the AZ you want to use . List of AZ(s) for your region are : \n {string.Join(" \n ",serverOperationsHelper.getAvailabilityZones())}");
             }
-            if (!string.IsNullOrEmpty(instanceLaunchRequest.AvailabilityZone) && !serverOperationsHelper.getAvailabilityZones(context).Contains(instanceLaunchRequest.AvailabilityZone))
+            if (!string.IsNullOrEmpty(instanceLaunchRequest.AvailabilityZone) && !serverOperationsHelper.getAvailabilityZones().Contains(instanceLaunchRequest.AvailabilityZone))
             {
                 return new ValidationResult(false, Constants.AZ_SLOT,
                     $" {instanceLaunchRequest.AvailabilityZone} is not a valid Availability Zone for your region ." +
-                    $"Can you try a AZ out of the following ones ? {serverOperationsHelper.getAvailabilityZones(context)}" );
+                    $"Can you try a AZ out of the following ones ? {serverOperationsHelper.getAvailabilityZones()}" );
             }
 
             if (instanceLaunchRequest.NumOfInstances == 0)
             {
                 return new ValidationResult(false, Constants.NUMBER_TYPE_SLOT,
-                    "Please enter the number of instances you want to launch . I currently support a maximum of 5 instances .");
+                    "Please enter the number of instances you want to launch . I currently support a maximum of 5 instances .",
+                    createResponseCard(Constants.NUMBER_TYPE_SLOT));
             }
             if (instanceLaunchRequest.NumOfInstances > 5)
             {
                 return new ValidationResult(false, Constants.NUMBER_TYPE_SLOT,
-                    "I currently only support upto 5 instances. Could you please try with any number between 1 and 5 ");
+                    "I currently only support upto 5 instances. Could you please try with any number between 1 and 5 ",
+                    createResponseCard(Constants.NUMBER_TYPE_SLOT));
             }
             return ValidationResult.VALID_RESULT;
         }
 
-        private void OperateAWSServer(InstanceSetup instanceLaunchRequest, ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        private LexResponse.LexResponseCard createResponseCard(string SlotType)
+        {
+            LexResponse.LexResponseCard card = new LexResponse.LexResponseCard();
+            List<LexResponse.LexButton> cardButtons = new List<LexResponse.LexButton>();
+            LexResponse.LexGenericAttachments cardGenericAttachments = new LexResponse.LexGenericAttachments();
+
+            switch (SlotType)
+            {
+                case Constants.NUMBER_TYPE_SLOT:
+                    card.Version = 1;
+                    card.ContentType = "application/vnd.amazonaws.card.generic";                    
+                    cardGenericAttachments.Title = "Instance count";
+                    cardGenericAttachments.SubTitle = "Select the number of instances to launch";
+                    cardButtons = new List<LexResponse.LexButton>()
+                    {
+                        new LexResponse.LexButton(){Text = "1" , Value = "1"},
+                        new LexResponse.LexButton(){Text = "2" , Value = "2"},
+                        new LexResponse.LexButton(){Text = "3" , Value = "3"},
+                        new LexResponse.LexButton(){Text = "4" , Value = "4"},
+                        new LexResponse.LexButton(){Text = "5" , Value = "5"},
+                    };
+                    cardGenericAttachments.Buttons = cardButtons;
+                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
+                                                                            { cardGenericAttachments };
+                    return card;
+
+                case Constants.INSTANCE_TYPE_SLOT:
+                    card.Version = 1;
+                    card.ContentType = "application/vnd.amazonaws.card.generic";
+                    cardGenericAttachments.Title = "Instance Types";
+                    cardGenericAttachments.SubTitle = "Choose an instance type";
+                    cardGenericAttachments.ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/AWS_Simple_Icons_Compute_Amazon_EC2_Instances.svg/200px-AWS_Simple_Icons_Compute_Amazon_EC2_Instances.svg.png";
+                    cardButtons = new List<LexResponse.LexButton>()
+                    {
+                        new LexResponse.LexButton(){Text = "t2micro" , Value = "t2micro"},
+                        new LexResponse.LexButton(){Text = "t2small" , Value = "t2small"},
+                        new LexResponse.LexButton(){Text = "t2medium" , Value = "t2medium"}
+                    };
+                    cardGenericAttachments.Buttons = cardButtons;
+                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
+                                                                            { cardGenericAttachments };
+                    return card;
+
+                case Constants.AMI_SLOT:
+                    card.Version = 1;
+                    card.ContentType = "application/vnd.amazonaws.card.generic";
+                    cardGenericAttachments.Title = "AMI";
+                    cardGenericAttachments.SubTitle = "Choose an AMI type";
+                    cardGenericAttachments.ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/AWS_Simple_Icons_Compute_Amazon_EC2_AMI.svg/2000px-AWS_Simple_Icons_Compute_Amazon_EC2_AMI.svg.png";
+                    cardButtons = new List<LexResponse.LexButton>()
+                    {
+                        new LexResponse.LexButton(){Text = "Ubuntu" , Value = "Ubuntu"},
+                        new LexResponse.LexButton(){Text = "Red Hat" , Value = "Red Hat"},
+                        new LexResponse.LexButton(){Text = "Windows" , Value = "Windows"},
+                        new LexResponse.LexButton(){Text = "Amazon Linux" , Value = "Amazon Linux"},
+                    };
+                    cardGenericAttachments.Buttons = cardButtons;
+                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
+                                                                            { cardGenericAttachments };
+                    return card;
+            }
+            return null;
+        }
+
+        private void OperateAWSServer(InstanceSetup instanceLaunchRequest, ref bool actionSucceeded, ref string actionMessage)
         {
             try
             {
                 serverOperationsHelper.LaunchRequest = instanceLaunchRequest;
-                serverOperationsHelper.LaunchServer(context, ref actionSucceeded, ref actionMessage);
+                serverOperationsHelper.LaunchServer(ref actionSucceeded, ref actionMessage);
             }
             catch (Exception ex)
             {
@@ -235,3 +303,4 @@ namespace Chatbot.IntentProcessors
         }
     }
 }
+

@@ -14,25 +14,21 @@ namespace Chatbot.IntentProcessors
         private bool IsLocalDebug { get; set; }
         private ServerOperationsHelper serverOperationsHelper = null;
         private IDictionary<string, string> sessionAttributes = new Dictionary<string, string>();
+        private ILambdaContext context;
 
-        public ServerIntentProcessor()
-        {
-            this.IsLocalDebug = false;
-            Setup();
-        }
-
-        public ServerIntentProcessor(bool isLocalDebug)
+        public ServerIntentProcessor(bool isLocalDebug , ILambdaContext context)
         {
             this.IsLocalDebug = isLocalDebug;
+            this.context = context;
             Setup();
         }
 
         private void Setup()
         {
-            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug);
+            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug,context);
         }
 
-        public override LexResponse Process(LexEvent lexEvent, ILambdaContext context)
+        public override LexResponse Process(LexEvent lexEvent)
         {
             bool actionSucceeded = false;
             string actionResponseMessage = string.Empty;
@@ -68,7 +64,7 @@ namespace Chatbot.IntentProcessors
                 {
                     lexEvent.CurrentIntent.Slots[validateResult.ViolationSlot] = null;
                     return ElicitSlot(sessionAttributes, lexEvent.CurrentIntent.Name, lexEvent.CurrentIntent.Slots,
-                                      validateResult.ViolationSlot, validateResult.Message);
+                                      validateResult.ViolationSlot, validateResult.Message , validateResult.ResponseCard);
                 }
                 //This means that the slots are valid
 
@@ -82,7 +78,8 @@ namespace Chatbot.IntentProcessors
                                      {
                                          ContentType = Constants.MESSAGE_CONTENT_TYPE,
                                          Content = actionResponseMessage
-                                     }
+                                     },
+                                     null
                                  );
                     }
 
@@ -101,7 +98,7 @@ namespace Chatbot.IntentProcessors
                                     new LexResponse.LexMessage
                                     {
                                         ContentType = Constants.MESSAGE_CONTENT_TYPE,
-                                        Content = $"Are you sure you want to {instanceRequest.InstanceAction} the server {instanceRequest.InstanceName}"
+                                        Content = $"Are you sure you want to {instanceRequest.InstanceAction} the server {instanceRequest.InstanceName} ?"
                                     }
                                 );
                 }
@@ -169,9 +166,9 @@ namespace Chatbot.IntentProcessors
                 {
                     return new ValidationResult(false,
                                                 Constants.SERVER_NAME_SLOT,
-                                                $"{instanceRequest.InstanceName} is not a valid instance in your account ." +
-                                                $"Please select one out of the following instances from your account ?" +
-                                                string.Join(',', instanceNames)
+                                                $"{instanceRequest.InstanceName} is not a valid instance in your account.\n" +
+                                                $"Please select one out of the following instances from your account ?\n" +
+                                                string.Join(" \n ", instanceNames)
                                                 );
                 }
             }
@@ -202,7 +199,7 @@ namespace Chatbot.IntentProcessors
             {
                 serverOperationsHelper.InstanceRequestObj = instanceRequest;
                 serverOperationsHelper.updateInstanceIdFromName();
-                instanceRequest = serverOperationsHelper.ServerOperation(context , ref actionSucceeded , ref actionMessage);
+                instanceRequest = serverOperationsHelper.ServerOperation(ref actionSucceeded , ref actionMessage);
             }
             catch (Exception ex)
             {

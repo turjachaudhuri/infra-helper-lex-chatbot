@@ -12,9 +12,16 @@ namespace Chatbot.HelperClasses
 {
     public class ServerOperationsHelper
     {
-        public ServerOperationsHelper(bool isLocalDebug)
+        public InstanceRequest InstanceRequestObj { get; set; }
+        public InstanceSetup LaunchRequest { get; set; }
+        public AmazonEC2Client Ec2Client { get; set; }
+        public bool IsLocalDebug { get; set; }
+        public ILambdaContext context { get; set; }
+
+        public ServerOperationsHelper(bool isLocalDebug , ILambdaContext context)
         {
             this.IsLocalDebug = isLocalDebug;
+            this.context = context;
             if (isLocalDebug)
             {
                 var chain = new CredentialProfileStoreChain();
@@ -31,10 +38,11 @@ namespace Chatbot.HelperClasses
             }
         }
 
-        public ServerOperationsHelper(bool isLocalDebug, InstanceRequest instanceRequest)
+        public ServerOperationsHelper(bool isLocalDebug, InstanceRequest instanceRequest , ILambdaContext context)
         {
             this.IsLocalDebug = isLocalDebug;
             this.InstanceRequestObj = instanceRequest;
+            this.context = context;
             if (isLocalDebug)
             {
                 var chain = new CredentialProfileStoreChain();
@@ -60,32 +68,24 @@ namespace Chatbot.HelperClasses
             InstanceRequestObj.InstanceState = filteredObj.InstanceState;
         }
 
-        public InstanceRequest InstanceRequestObj { get; set; }
-        public InstanceSetup LaunchRequest { get; set; }
-        public AmazonEC2Client Ec2Client { get; set; }
-        public bool IsLocalDebug { get; set; }
-
-        public InstanceRequest ServerOperation(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        public InstanceRequest ServerOperation(ref bool actionSucceeded, ref string actionMessage)
         {
             switch (InstanceRequestObj.InstanceAction.ToLower())
             {
                 case "start":
-                    StartInstance(context, ref actionSucceeded, ref actionMessage);
+                    StartInstance(ref actionSucceeded, ref actionMessage);
                     break;
                 case "stop":
-                    StopInstance(context, ref actionSucceeded, ref actionMessage);
-                    break;
-                case "describe":
-                    StartInstance(context, ref actionSucceeded, ref actionMessage);
+                    StopInstance(ref actionSucceeded, ref actionMessage);
                     break;
                 case "terminate":
-                    TerminateInstance(context, ref actionSucceeded, ref actionMessage);
+                    TerminateInstance( ref actionSucceeded, ref actionMessage);
                     break;
             }
             return InstanceRequestObj;
         }
 
-        private void TerminateInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        private void TerminateInstance(ref bool actionSucceeded, ref string actionMessage)
         {
             if (InstanceRequestObj.InstanceState.ToLower() != "running" && InstanceRequestObj.InstanceState.ToLower() != "stopped")
             {
@@ -117,7 +117,7 @@ namespace Chatbot.HelperClasses
             }
         }
 
-        private void DescribeInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        private void DescribeInstance(ref bool actionSucceeded, ref string actionMessage)
         {
             try
             {
@@ -146,28 +146,28 @@ namespace Chatbot.HelperClasses
             {
                 foreach (Instance instance in item.Instances)
                 {
-                    foreach (Tag tag in instance.Tags)
-                    {
-                        instanceRequestList.Add(
+                    Tag nameTag = instance.Tags.Where(x => x.Key == "Name").FirstOrDefault();
+                    string nameOfInstance = nameTag != null ? nameTag.Value : instance.InstanceId;
+
+                    instanceRequestList.Add(
                                     new InstanceRequest(
-                                                        !String.IsNullOrEmpty(tag.Value) ? tag.Value : instance.InstanceId,
+                                                        nameOfInstance,
                                                         string.Empty,
                                                         instance.InstanceId,
                                                         instance.State.Name.Value
                                                         )
-                                            );
-                    }
+                                            );                   
                 }
             }
             return instanceRequestList;
         }
 
-        public void StopInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        public void StopInstance(ref bool actionSucceeded, ref string actionMessage)
         {
             if (InstanceRequestObj.InstanceState.ToLower() != "running")
             {
                 actionSucceeded = false;
-                actionMessage = $"The instance {InstanceRequestObj.InstanceName} is currently in {InstanceRequestObj.InstanceState} , and cannot be stopped at this time.";
+                actionMessage = $"The instance {InstanceRequestObj.InstanceName} is currently in {InstanceRequestObj.InstanceState} state, and cannot be stopped at this time.";
                 return;
             }
             var request = new StopInstancesRequest
@@ -194,7 +194,7 @@ namespace Chatbot.HelperClasses
             }
         }
 
-        public void StartInstance(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        public void StartInstance(ref bool actionSucceeded, ref string actionMessage)
         {
             if (InstanceRequestObj.InstanceState.ToLower() != "stopped")
             {
@@ -237,7 +237,7 @@ namespace Chatbot.HelperClasses
             return myKeyPairs.Find(x => x.KeyName == keyPairName) != null;
         }
 
-        public bool CreateKeyPair(string keyPairName)
+        public bool CreateKeyPair(string keyPairName , string keyPairPath)
         {
             if (!CheckKeyPair(keyPairName))
             {
@@ -247,21 +247,20 @@ namespace Chatbot.HelperClasses
                 };
                 var ckpResponse = Ec2Client.CreateKeyPairAsync(newKeyRequest).GetAwaiter().GetResult();
 
-                /*
-                // Save the private key in a .pem file
-                using (FileStream s = new FileStream(keyPairName + ".pem", FileMode.Create))
-                using (StreamWriter writer = new StreamWriter(s))
-                {
-                    writer.WriteLine(ckpResponse.KeyPair.KeyMaterial);
-                }
-                */
+                
+                string bucketName = $"infrahelper-keypair-{Guid.NewGuid()}";
+                string bucketkeyName = $"{keyPairName}.pem";
+                bool successfulUpload = false;
+                S3Helper s3Helper = new S3Helper(this.IsLocalDebug, bucketName, bucketkeyName);
+                s3Helper.PushTextFileToS3Bucket(ckpResponse.KeyPair.KeyMaterial , ref successfulUpload);
 
+                keyPairPath = $"Private key for this instance is stored in {bucketName} bucket and {bucketkeyName} key . Please download from there for connecting to the instance.";
                 return true;
             }
             return false;
         }
 
-        public List<string> getAvailabilityZones(ILambdaContext context)
+        public List<string> getAvailabilityZones()
         {
             try
             {
@@ -277,12 +276,13 @@ namespace Chatbot.HelperClasses
         }
 
 
-        internal void LaunchServer(ILambdaContext context, ref bool actionSucceeded, ref string actionMessage)
+        internal void LaunchServer(ref bool actionSucceeded, ref string actionMessage)
         {
             try
             {
+                string keyPairPath = string.Empty;
                 LaunchRequest.KeyPairName = $"KeyPair-{Guid.NewGuid().ToString()}";
-                while (!CreateKeyPair(LaunchRequest.KeyPairName))
+                while (!CreateKeyPair(LaunchRequest.KeyPairName , keyPairPath))
                 {
                     LaunchRequest.KeyPairName = Guid.NewGuid().ToString();
                 }
@@ -324,6 +324,17 @@ namespace Chatbot.HelperClasses
 
                 List<InstanceNetworkInterfaceSpecification> enis = new List<InstanceNetworkInterfaceSpecification>() { defaultENI };
 
+                EbsBlockDevice ebsBlockDevice = new EbsBlockDevice
+                {
+                    VolumeSize = 10,
+                    VolumeType = GetActualStorageType(LaunchRequest.StorageType)
+                };
+                BlockDeviceMapping blockDeviceMapping = new BlockDeviceMapping
+                {
+                    DeviceName = "/dev/xvda"
+                };
+                blockDeviceMapping.Ebs = ebsBlockDevice;
+
                 var launchRequest = new RunInstancesRequest()
                 {
                     ImageId = GetImageID(LaunchRequest.AMIType),
@@ -331,7 +342,9 @@ namespace Chatbot.HelperClasses
                     MinCount = LaunchRequest.NumOfInstances,
                     MaxCount = LaunchRequest.NumOfInstances,
                     KeyName = LaunchRequest.KeyPairName,
-                    NetworkInterfaces = enis
+                    Placement = new Placement(LaunchRequest.AvailabilityZone),
+                    NetworkInterfaces = enis,
+                    BlockDeviceMappings = new List<BlockDeviceMapping>() { blockDeviceMapping }
                 };
 
                 RunInstancesResponse launchResponse = Ec2Client.RunInstancesAsync(launchRequest).GetAwaiter().GetResult();
@@ -344,14 +357,14 @@ namespace Chatbot.HelperClasses
                 }
 
                 actionSucceeded = true;
-                actionMessage = $"The instance has been launched. Please check the AWS Console to verify.";
+                actionMessage = $"The instance has been launched. Please check the AWS Console to verify. {keyPairPath}";
             }
             catch (Exception ex)
             {
-                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.Message}");
-                context.Logger.LogLine($"ServerOperationsHelper::StopInstance {ex.StackTrace}");
+                context.Logger.LogLine($"ServerOperationsHelper::LaunchServer {ex.Message}");
+                context.Logger.LogLine($"ServerOperationsHelper::LaunchServer {ex.StackTrace}");
                 actionSucceeded = false;
-                actionMessage = $"Could not start {InstanceRequestObj.InstanceName} . Please contact your administrator.";
+                actionMessage = $"Could not launch the server . Please contact your administrator.";
             }
         }
 
@@ -363,6 +376,11 @@ namespace Chatbot.HelperClasses
         private string GetActualInstanceType(string InstanceType)
         {
             return SampleData.INSTANC_TYPE_DICT.GetValueOrDefault(InstanceType.ToLower());
+        }
+
+        private string GetActualStorageType(string StorageType)
+        {
+            return SampleData.STORAGE_TYPE_DICT.GetValueOrDefault(StorageType.ToLower().Trim());
         }
     }
 }

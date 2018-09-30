@@ -44,22 +44,22 @@ namespace InfraHelperChatbot
                 switch (lexEvent.CurrentIntent.Name)
                 {
                     case "StartServer":
-                        process = new ServerIntentProcessor(IsLocalDebug);
+                        process = new ServerIntentProcessor(IsLocalDebug , context);
                         break;
                     case "DescribeInstances":
-                        process = new DescribeIntentProcessor(IsLocalDebug);
+                        process = new DescribeIntentProcessor(IsLocalDebug , context);
                         break;
                     case "Greetings":
-                        process = new GreetingIntentProcessor();
+                        process = new GreetingIntentProcessor(context);
                         break;
                     case "Thanks":
-                        process = new ThanksIntentProcessor();
+                        process = new ThanksIntentProcessor(context);
                         break;
                     case "Helper":
-                        process = new HelperIntentProcessor();
+                        process = new HelperIntentProcessor(context);
                         break;
                     case "LaunchInstance":
-                        process = new LaunchIntentProcessor(IsLocalDebug);
+                        process = new LaunchIntentProcessor(IsLocalDebug, context);
                         break;
                     default:
                         throw new Exception($"Intent with name {lexEvent.CurrentIntent.Name} not supported");
@@ -70,7 +70,7 @@ namespace InfraHelperChatbot
                 context.Logger.LogLine($"ChatbotStartupProgram::LambdaFunctionHandler exception message : {ex.Message}");
                 context.Logger.LogLine($"ChatbotStartupProgram::LambdaFunctionHandler stacktrace : {ex.StackTrace}");
             }
-            return process.Process(lexEvent, context);
+            return process.Process(lexEvent);
         }
     }
 }

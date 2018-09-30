@@ -14,25 +14,21 @@ namespace Chatbot.IntentProcessors
         private bool IsLocalDebug { get; set; }
         private ServerOperationsHelper serverOperationsHelper = null;
         private IDictionary<string, string> sessionAttributes = new Dictionary<string, string>();
+        private ILambdaContext context;
 
-        public DescribeIntentProcessor()
-        {
-            this.IsLocalDebug = false;
-            Setup();
-        }
-
-        public DescribeIntentProcessor(bool isLocalDebug)
+        public DescribeIntentProcessor(bool isLocalDebug , ILambdaContext context)
         {
             this.IsLocalDebug = isLocalDebug;
+            this.context = context;
             Setup();
         }
 
         private void Setup()
         {
-            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug);
+            serverOperationsHelper = new ServerOperationsHelper(IsLocalDebug, context);
         }
 
-        public override LexResponse Process(LexEvent lexEvent, ILambdaContext context)
+        public override LexResponse Process(LexEvent lexEvent)
         {
             context.Logger.LogLine("Input Request: " + JsonConvert.SerializeObject(lexEvent));
 
@@ -54,9 +50,9 @@ namespace Chatbot.IntentProcessors
             }
             else
             {
-                responseMessage = $"You have {instances.Count} instance(s) in your AWS account in total , out of which " +
-                    $"{string.Join(" , ", groupedInstances)}." +
-                    $"The instances are as follows : {string.Join(" , ", instances.ConvertAll(x => $"{x.InstanceName}({x.InstanceState})"))}";
+                responseMessage = $"You have {instances.Count} instance(s) in your AWS account in total . \n Out of them " +
+                    $"{string.Join(" \n ", groupedInstances)}. \n" +
+                    $"The instances are as follows : \n {string.Join(" \n ", instances.ConvertAll(x => $"{x.InstanceName}({x.InstanceState})"))}";
             }
 
             return Close(
@@ -65,8 +61,9 @@ namespace Chatbot.IntentProcessors
                         new LexResponse.LexMessage
                         {
                             ContentType = Constants.MESSAGE_CONTENT_TYPE,
-                            Content = $"Your existing instances are : { string.Join(',', instances.ConvertAll(x => $"{x.InstanceName}({x.InstanceState})"))}"
-                        }
+                            Content = responseMessage
+                        },
+                        null
                     );
         }
     }

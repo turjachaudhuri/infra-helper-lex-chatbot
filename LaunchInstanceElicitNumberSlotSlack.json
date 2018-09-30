@@ -1,0 +1,78 @@
+{
+	"MessageVersion": "1.0",
+	"InvocationSource": "DialogCodeHook",
+	"UserId": "98f92602-8614-4aec-99cf-b5170ba26f7f:TD5967QP8:UD3R3FVFD",
+	"InputTranscript": "us-east-1a",
+	"SessionAttributes": {
+		"currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"AMIType\":\"Ubuntu\",\"InstanceType\":\"t2small\",\"NumOfInstances\":0,\"StorageType\":\"General purpose\"}"
+	},
+	"RequestAttributes": {
+		"x-amz-lex:channel-id": "98f92602-8614-4aec-99cf-b5170ba26f7f",
+		"x-amz-lex:webhook-endpoint-url": "https://channels.lex.us-east-1.amazonaws.com/slack/webhook/98f92602-8614-4aec-99cf-b5170ba26f7f",
+		"x-amz-lex:accept-content-types": "PlainText",
+		"x-amz-lex:user-id": "447312262790.447312577622",
+		"x-amz-lex:slack-team-id": "TD5967QP8",
+		"x-amz-lex:slack-bot-token": "xoxb-447312262790-445221038192-JQpdJLzcha9kGKZQCvXHABdL",
+		"x-amz-lex:channel-name": "WolfBotSlackIntegration",
+		"x-amz-lex:channel-type": "Slack"
+	},
+	"Bot": {
+		"Name": "InfraHelper",
+		"Alias": "InfraHelper",
+		"Version": "4"
+	},
+	"OutputDialogMode": "Text",
+	"CurrentIntent": {
+		"Name": "LaunchInstance",
+		"Slots": {
+			"AvailabilityZones": "us-east-1a",
+			"InstanceTypes": "t2small",
+			"NumberTypes": null,
+			"AMI": "Ubuntu",
+			"StorageTypes": "General purpose"
+		},
+		"SlotDetails": {
+			"AvailabilityZones": {
+				"Resolutions": [
+					{
+						"value": "us-east-1a"
+					},
+					{
+						"value": "us-east-1b"
+					},
+					{
+						"value": "us-east-1c"
+					},
+					{
+						"value": "us-east-1e"
+					}
+				]
+			},
+			"InstanceTypes": {
+				"Resolutions": [
+					{
+						"value": "t2small"
+					}
+				]
+			},
+			"NumberTypes": {
+				"Resolutions": []
+			},
+			"AMI": {
+				"Resolutions": [
+					{
+						"value": "Ubuntu"
+					}
+				]
+			},
+			"StorageTypes": {
+				"Resolutions": [
+					{
+						"value": "General purpose"
+					}
+				]
+			}
+		},
+		"ConfirmationStatus": "None"
+	}
+}

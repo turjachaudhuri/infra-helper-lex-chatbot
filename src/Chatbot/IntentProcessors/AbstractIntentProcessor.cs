@@ -19,7 +19,7 @@ namespace Chatbot.IntentProcessors
         /// <param name="lexEvent"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public abstract LexResponse Process(LexEvent lexEvent, ILambdaContext context);
+        public abstract LexResponse Process(LexEvent lexEvent);
 
         protected string SerializeRequest(InstanceRequest instanceRequest)
         {
@@ -47,7 +47,10 @@ namespace Chatbot.IntentProcessors
             return JsonConvert.DeserializeObject<InstanceSetup>(json);
         }
 
-        protected LexResponse Close(IDictionary<string, string> sessionAttributes, string fulfillmentState, LexResponse.LexMessage message)
+        protected LexResponse Close(IDictionary<string, string> sessionAttributes, 
+                                    string fulfillmentState, 
+                                    LexResponse.LexMessage message,
+                                    LexResponse.LexResponseCard responseCard = null)
         {
             return new LexResponse
             {
@@ -56,7 +59,8 @@ namespace Chatbot.IntentProcessors
                 {
                     Type = "Close",
                     FulfillmentState = fulfillmentState,
-                    Message = message
+                    Message = message,
+                    ResponseCard = responseCard
                 }
             };
         }
@@ -74,7 +78,14 @@ namespace Chatbot.IntentProcessors
             };
         }
 
-        protected LexResponse ElicitSlot(IDictionary<string, string> sessionAttributes, string intentName, IDictionary<string, string> slots, string slotToElicit, LexResponse.LexMessage message)
+        protected LexResponse ElicitSlot(
+                                    IDictionary<string, string> sessionAttributes,
+                                    string intentName,
+                                    IDictionary<string, string> slots,
+                                    string slotToElicit,
+                                    LexResponse.LexMessage message,
+                                    LexResponse.LexResponseCard responseCard
+                                    )
         {
             return new LexResponse
             {
@@ -85,7 +96,8 @@ namespace Chatbot.IntentProcessors
                     IntentName = intentName,
                     Slots = slots,
                     SlotToElicit = slotToElicit,
-                    Message = message
+                    Message = message,
+                    ResponseCard = responseCard
                 }
             };
         }

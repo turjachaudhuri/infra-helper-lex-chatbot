@@ -1,0 +1,52 @@
+{
+    "MessageVersion": "1.0",
+    "InvocationSource": "DialogCodeHook",
+    "UserId": "vvize39uzhqiekxzb3c7xmw90ho5286u",
+    "InputTranscript": "general purpose",
+    "SessionAttributes": {
+        "currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"AMIType\":\"Ubuntu\",\"NumOfInstances\":0}"
+    },
+    "RequestAttributes": null,
+    "Bot": {
+        "Name": "InfraHelper",
+        "Alias": "$LATEST",
+        "Version": "$LATEST"
+    },
+    "OutputDialogMode": "Text",
+    "CurrentIntent": {
+        "Name": "LaunchInstance",
+        "Slots": {
+            "AvailabilityZones": null,
+            "InstanceTypes": null,
+            "NumberTypes": null,
+            "AMI": "Ubuntu",
+            "StorageTypes": "General purpose"
+        },
+        "SlotDetails": {
+            "AvailabilityZones": {
+                "Resolutions": []
+            },
+            "InstanceTypes": {
+                "Resolutions": []
+            },
+            "NumberTypes": {
+                "Resolutions": []
+            },
+            "AMI": {
+                "Resolutions": [
+                    {
+                        "value": "Ubuntu"
+                    }
+                ]
+            },
+            "StorageTypes": {
+                "Resolutions": [
+                    {
+                        "value": "General purpose"
+                    }
+                ]
+            }
+        },
+        "ConfirmationStatus": "None"
+    }
+}

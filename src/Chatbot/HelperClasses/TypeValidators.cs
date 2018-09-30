@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Chatbot.HelperClasses
 {
@@ -20,7 +21,7 @@ namespace Chatbot.HelperClasses
         }
         public static string ListOfValidActionTypes()
         {
-            return string.Join(',', VALID_ACTION_TYPES);
+            return string.Join(" \n ", VALID_ACTION_TYPES);
         }
 
         public static readonly ImmutableArray<string> VALID_AMI_TYPES =
@@ -37,7 +38,7 @@ namespace Chatbot.HelperClasses
         }
         public static string ListOfValidAMITypes()
         {
-            return string.Join(',', VALID_AMI_TYPES_RESPONSE);
+            return string.Join('\n', VALID_AMI_TYPES_RESPONSE);
         }
 
         public static readonly ImmutableArray<string> VALID_STORAGE_TYPES =
@@ -50,11 +51,11 @@ namespace Chatbot.HelperClasses
 
         public static bool IsValidStorageType(string StorageType)
         {
-            return VALID_STORAGE_TYPES.Contains(StorageType.ToLower());
+            return VALID_STORAGE_TYPES.Contains(Regex.Replace(StorageType.ToLower().Trim(), @"\s+", ""));
         }
         public static string ListOfValidStorageTypes()
         {
-            return string.Join(',', VALID_STORAGE_TYPES_RESPONSE);
+            return string.Join('\n', VALID_STORAGE_TYPES_RESPONSE);
         }
 
         public static readonly ImmutableArray<string> VALID_INSTANCE_TYPES =
@@ -71,7 +72,7 @@ namespace Chatbot.HelperClasses
         }
         public static string ListOfValidInstanceTypes()
         {
-            return string.Join(',', VALID_INSTANCE_TYPES_RESPONSE);
+            return string.Join('\n', VALID_INSTANCE_TYPES_RESPONSE);
         }
     }
 }

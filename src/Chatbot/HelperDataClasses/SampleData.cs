@@ -10,9 +10,9 @@ namespace Chatbot.HelperDataClasses
         public static readonly ImmutableArray<string> SAMPLE_GREETING_RESPONSES =
                ImmutableArray.Create<string>(new string[]
                            {
-                              "Hey there , I am WolfBot , your friendly AWS Infra helper ! Hope you are doing well . Let me know what I can help you with today. If in doubt , type help",
-                              "Hola mate , I am WolfBot , your friendly AWS Infra helper ! Hope you are doing well . Please tell me how I can help you today . If in doubt , type examples",
-                              "Hello , I am WolfBot , your friendly AWS Infra helper ! Hope you are fine . Please tell me how I can solve your worries . If in doubt , type show examples",
+                              "Hey there , I am WolfBot , your friendly AWS Infra helper ! Hope you are doing well . Let me know what I can help you with today. If in doubt , type help.",
+                              "Hola mate , I am WolfBot , your friendly AWS Infra helper ! Hope you are doing well . Please tell me how I can help you today . If in doubt , type examples.",
+                              "Hello , I am WolfBot , your friendly AWS Infra helper ! Hope you are fine . Please tell me how I can solve your worries . If in doubt , type show examples.",
                            });
 
         public static readonly ImmutableArray<string> SAMPLE_THANKS_RESPONSES =
@@ -26,10 +26,10 @@ namespace Chatbot.HelperDataClasses
         public static readonly ImmutableArray<string> SAMPLE_EXAMPLE_RESPONSES =
               ImmutableArray.Create<string>(new string[]
                           {
-                              "I know all about your AWS instances . Ask me : list instances",
-                              "I can start an AWS instance for you . Ask me : start DEV",
-                              "I can stop an AWS instance for you . Ask me : stop QA",
-                              "I can terminate an AWS instance for you . Ask me : terminate PROD"
+                              "I know all about your AWS instances . Ask me : list instances.",
+                              "I can start an AWS instance for you . Ask me : start DEV.",
+                              "I can stop an AWS instance for you . Ask me : stop QA.",
+                              "I can terminate an AWS instance for you . Ask me : terminate PROD."
                           });
 
         public static Dictionary<string, string> AMI_DICT = new Dictionary<string, string>
@@ -45,6 +45,13 @@ namespace Chatbot.HelperDataClasses
                     {"t2micro", "t2.micro"},
                     {"t2small", "t2.small"},
                     {"t2medium", "t2.medium"}
+                };
+
+        public static Dictionary<string, string> STORAGE_TYPE_DICT = new Dictionary<string, string>
+                {
+                    {"generalpurpose", "gp2"},
+                    {"provisioned", "io1"},
+                    {"magnetic", "standard"}
                 };
     }
 }

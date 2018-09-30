@@ -1,4 +1,5 @@
 ﻿using Amazon.Lambda.LexEvents;
+using Chatbot.HelperDataClasses;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,7 +21,28 @@ namespace Chatbot.HelperClasses
 
             if (!string.IsNullOrEmpty(message))
             {
-                this.Message = new LexResponse.LexMessage { ContentType = "PlainText", Content = message };
+                this.Message = new LexResponse.LexMessage
+                                    {
+                                        ContentType = Constants.MESSAGE_CONTENT_TYPE,
+                                        Content = message
+                                    };
+                this.ResponseCard = null;
+            }
+        }
+
+        public ValidationResult(bool isValid, string violationSlot, string message , LexResponse.LexResponseCard responseCard)
+        {
+            this.IsValid = isValid;
+            this.ViolationSlot = violationSlot;
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                this.Message = new LexResponse.LexMessage
+                {
+                    ContentType = Constants.MESSAGE_CONTENT_TYPE,
+                    Content = message
+                };
+                this.ResponseCard = responseCard;
             }
         }
 
@@ -38,5 +60,10 @@ namespace Chatbot.HelperClasses
         /// The message explaining to the user what is wrong with the slot value.
         /// </summary>
         public LexResponse.LexMessage Message { get; }
+
+        /// <summary>
+        /// The message explaining to the user what is wrong with the slot value.
+        /// </summary>
+        public LexResponse.LexResponseCard ResponseCard { get; }
     }
 }

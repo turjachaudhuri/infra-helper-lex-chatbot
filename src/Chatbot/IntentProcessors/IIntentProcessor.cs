@@ -14,8 +14,7 @@ namespace Chatbot.IntentProcessors
         /// Main method for processing the Lex event for the intent.
         /// </summary>
         /// <param name="lexEvent"></param>
-        /// <param name="context"></param>
         /// <returns></returns>
-        LexResponse Process(LexEvent lexEvent, Amazon.Lambda.Core.ILambdaContext context);
+        LexResponse Process(LexEvent lexEvent);
     }
 }
