@@ -99,7 +99,8 @@ namespace Chatbot.IntentProcessors
                                     {
                                         ContentType = Constants.MESSAGE_CONTENT_TYPE,
                                         Content = $"Are you sure you want to {instanceRequest.InstanceAction} the server {instanceRequest.InstanceName} ?"
-                                    }
+                                    },
+                                    createResponseCard(Constants.CONFIRMATION)
                                 );
                 }
                 else if (string.Equals(lexEvent.CurrentIntent.ConfirmationStatus, "Confirmed", StringComparison.Ordinal))
@@ -175,20 +176,21 @@ namespace Chatbot.IntentProcessors
             if (string.IsNullOrEmpty(instanceRequest.InstanceAction) && !string.IsNullOrEmpty(instanceRequest.InstanceName))
             {
                 return new ValidationResult(false, Constants.ACTION_SLOT,
-                    $"Please enter the action you want to perform on {instanceRequest.InstanceName}");
+                    $"Please select the action you want to perform on {instanceRequest.InstanceName}" ,
+                    createResponseCard(Constants.ACTION_SLOT));
             }
             if (string.IsNullOrEmpty(instanceRequest.InstanceAction) && !string.IsNullOrEmpty(instanceRequest.InstanceName))
             {
                 return new ValidationResult(false, Constants.ACTION_SLOT,
-                    $"Please enter the action you want to perform on {instanceRequest.InstanceName}");
+                    $"Please select the action you want to perform on {instanceRequest.InstanceName}",
+                    createResponseCard(Constants.ACTION_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceRequest.InstanceAction) && !TypeValidators.IsValidActionType(instanceRequest.InstanceAction))
             {
                 return new ValidationResult(false, Constants.ACTION_SLOT,
-                    $"We currently do not support {instanceRequest.InstanceAction} as a valid action ." +
-                    $"Can you try an action out of the following ones ? \n" +
-                    TypeValidators.ListOfValidActionTypes()
-                        );
+                    $"I currently do not support {instanceRequest.InstanceAction} as a valid action ." +
+                    $"Please select the action you want to perform on {instanceRequest.InstanceName}",
+                    createResponseCard(Constants.ACTION_SLOT));
             }
             return ValidationResult.VALID_RESULT;
         }

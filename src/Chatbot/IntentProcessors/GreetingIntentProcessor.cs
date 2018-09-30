@@ -30,8 +30,8 @@ namespace Chatbot.IntentProcessors
                         {
                             ContentType = Constants.MESSAGE_CONTENT_TYPE,
                             Content = SampleData.SAMPLE_GREETING_RESPONSES[index]
-                        },
-                        createResponseCard()
+                        }
+                        //,createResponseCard()
                     );
         }
 

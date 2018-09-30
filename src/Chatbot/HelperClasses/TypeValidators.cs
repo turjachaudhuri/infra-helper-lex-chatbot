@@ -13,7 +13,7 @@ namespace Chatbot.HelperClasses
     {
         public static readonly ImmutableArray<string> VALID_ACTION_TYPES =
                 ImmutableArray.Create<string>(new string[] 
-                            { "start", "stop","describe","terminate" });
+                            { "start", "stop","terminate" });
 
         public static bool IsValidActionType(string action)
         {
@@ -34,7 +34,7 @@ namespace Chatbot.HelperClasses
 
         public static bool IsValidAMIType(string AMIType)
         {
-            return VALID_AMI_TYPES.Contains(AMIType.ToLower());
+            return VALID_AMI_TYPES.Contains(Regex.Replace(AMIType.ToLower().Trim(), @"\s+", ""));
         }
         public static string ListOfValidAMITypes()
         {

@@ -7,6 +7,7 @@ using Chatbot.HelperDataClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Chatbot.HelperClasses
 {
@@ -106,7 +107,7 @@ namespace Chatbot.HelperClasses
                     Console.WriteLine("Instance state: " + item.CurrentState.Name);
                 }
                 actionSucceeded = true;
-                actionMessage = $"The instance {InstanceRequestObj.InstanceName} has been terminated. Please check the AWS Console to verify.";
+                actionMessage = $"The instance {InstanceRequestObj.InstanceName} is being terminated. Please check the AWS Console to verify.";
             }
             catch (Exception ex)
             {
@@ -183,7 +184,7 @@ namespace Chatbot.HelperClasses
                     Console.WriteLine("Instance state: " + item.CurrentState.Name);
                 }
                 actionSucceeded = true;
-                actionMessage = $"The instance {InstanceRequestObj.InstanceName} has been stopped. Please check the AWS Console to verify.";
+                actionMessage = $"The instance {InstanceRequestObj.InstanceName} is being stopped. Please check the AWS Console to verify.";
             }
             catch (Exception ex)
             {
@@ -216,7 +217,7 @@ namespace Chatbot.HelperClasses
                     Console.WriteLine("Instance state: " + item.CurrentState.Name);
                 }
                 actionSucceeded = true;
-                actionMessage = $"The instance {InstanceRequestObj.InstanceName} has been started. Please check the AWS Console to verify.";
+                actionMessage = $"The instance {InstanceRequestObj.InstanceName} is being started. Please check the AWS Console to verify.";
             }
             catch (Exception ex)
             {
@@ -237,7 +238,7 @@ namespace Chatbot.HelperClasses
             return myKeyPairs.Find(x => x.KeyName == keyPairName) != null;
         }
 
-        public bool CreateKeyPair(string keyPairName , string keyPairPath)
+        public bool CreateKeyPair(string keyPairName , ref string keyPairPath)
         {
             if (!CheckKeyPair(keyPairName))
             {
@@ -248,7 +249,7 @@ namespace Chatbot.HelperClasses
                 var ckpResponse = Ec2Client.CreateKeyPairAsync(newKeyRequest).GetAwaiter().GetResult();
 
                 
-                string bucketName = $"infrahelper-keypair-{Guid.NewGuid()}";
+                string bucketName = Constants.KEY_PAIR_BUCKET_NAME;
                 string bucketkeyName = $"{keyPairName}.pem";
                 bool successfulUpload = false;
                 S3Helper s3Helper = new S3Helper(this.IsLocalDebug, bucketName, bucketkeyName);
@@ -282,7 +283,7 @@ namespace Chatbot.HelperClasses
             {
                 string keyPairPath = string.Empty;
                 LaunchRequest.KeyPairName = $"KeyPair-{Guid.NewGuid().ToString()}";
-                while (!CreateKeyPair(LaunchRequest.KeyPairName , keyPairPath))
+                while (!CreateKeyPair(LaunchRequest.KeyPairName , ref keyPairPath))
                 {
                     LaunchRequest.KeyPairName = Guid.NewGuid().ToString();
                 }
@@ -357,7 +358,7 @@ namespace Chatbot.HelperClasses
                 }
 
                 actionSucceeded = true;
-                actionMessage = $"The instance has been launched. Please check the AWS Console to verify. {keyPairPath}";
+                actionMessage = $"The instance(s) are being launched. Please check the AWS Console to verify. {keyPairPath}";
             }
             catch (Exception ex)
             {
@@ -370,17 +371,17 @@ namespace Chatbot.HelperClasses
 
         private string GetImageID(string AMIType)
         {
-            return SampleData.AMI_DICT.GetValueOrDefault(AMIType.ToLower());
+            return SampleData.AMI_DICT.GetValueOrDefault(Regex.Replace(AMIType.ToLower().Trim(), @"\s+", ""));
         }
 
         private string GetActualInstanceType(string InstanceType)
         {
-            return SampleData.INSTANC_TYPE_DICT.GetValueOrDefault(InstanceType.ToLower());
+            return SampleData.INSTANC_TYPE_DICT.GetValueOrDefault(Regex.Replace(InstanceType.ToLower().Trim(), @"\s+", ""));
         }
 
         private string GetActualStorageType(string StorageType)
         {
-            return SampleData.STORAGE_TYPE_DICT.GetValueOrDefault(StorageType.ToLower().Trim());
+            return SampleData.STORAGE_TYPE_DICT.GetValueOrDefault(Regex.Replace(StorageType.ToLower().Trim(), @"\s+", ""));
         }
     }
 }

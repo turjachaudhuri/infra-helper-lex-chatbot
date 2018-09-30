@@ -2,9 +2,9 @@
     "MessageVersion": "1.0",
     "InvocationSource": "DialogCodeHook",
     "UserId": "98f92602-8614-4aec-99cf-b5170ba26f7f:TD5967QP8:UD3R3FVFD",
-    "InputTranscript": "yes",
+    "InputTranscript": "Amazon Linux",
     "SessionAttributes": {
-        "currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"AMIType\":\"Amazon Linux\",\"InstanceType\":\"t2micro\",\"NumOfInstances\":2,\"StorageType\":\"General purpose\",\"AvailabilityZone\":\"us-east-1a\"}"
+        "currentSetupRequest": "{\"InstanceName\":\"\",\"KeyPairName\":\"\",\"SecurityGroupName\":\"\",\"NumOfInstances\":0}"
     },
     "RequestAttributes": {
         "x-amz-lex:channel-id": "98f92602-8614-4aec-99cf-b5170ba26f7f",
@@ -24,36 +24,19 @@
     "OutputDialogMode": "Text",
     "CurrentIntent": {
         "Name": "LaunchInstance",
-					"Slots": {
-						"AvailabilityZones": "us-east-1a",
-						"InstanceTypes": "t2micro",
-						"NumberTypes": "2",
-						"AMI": "Amazon Linux",
-						"StorageTypes": "General purpose"
-					},
+        "Slots": {
+            "AvailabilityZones": null,
+            "InstanceTypes": null,
+            "NumberTypes": null,
+            "AMI": "Amazon Linux",
+            "StorageTypes": null
+        },
         "SlotDetails": {
             "AvailabilityZones": {
-                "Resolutions": [
-                    {
-                        "value": "us-east-1a"
-                    },
-                    {
-                        "value": "us-east-1b"
-                    },
-                    {
-                        "value": "us-east-1c"
-                    },
-                    {
-                        "value": "us-east-1e"
-                    }
-                ]
+                "Resolutions": []
             },
             "InstanceTypes": {
-                "Resolutions": [
-                    {
-                        "value": "t2micro"
-                    }
-                ]
+                "Resolutions": []
             },
             "NumberTypes": {
                 "Resolutions": []
@@ -66,13 +49,9 @@
                 ]
             },
             "StorageTypes": {
-                "Resolutions": [
-                    {
-                        "value": "General purpose"
-                    }
-                ]
+                "Resolutions": []
             }
         },
-        "ConfirmationStatus": "Confirmed"
+        "ConfirmationStatus": "None"
     }
 }

@@ -93,7 +93,8 @@ namespace Chatbot.IntentProcessors
                                         Content = $"Are you sure you want to launch {instanceLaunchRequest.NumOfInstances.ToString()} instance(s) with \n AMI - {instanceLaunchRequest.AMIType} " +
                                                   $"\n Instance Type - {instanceLaunchRequest.InstanceType} and \n Storage Type - {instanceLaunchRequest.StorageType} ?"
                                                                 
-                                    }
+                                    },
+                                    createResponseCard(Constants.CONFIRMATION)
                                 );
                 }
                 else if (string.Equals(lexEvent.CurrentIntent.ConfirmationStatus, "Confirmed", StringComparison.Ordinal))
@@ -156,14 +157,14 @@ namespace Chatbot.IntentProcessors
             if (string.IsNullOrEmpty(instanceLaunchRequest.AMIType))
             {
                 return new ValidationResult(false, Constants.AMI_SLOT,
-                    $"Please enter the AMI you want to use . I currently support the following : \n {TypeValidators.ListOfValidAMITypes()} " ,
+                    "Select an AMI",
                     createResponseCard(Constants.AMI_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.AMIType) && !TypeValidators.IsValidAMIType(instanceLaunchRequest.AMIType))
             {
                 return new ValidationResult(false, Constants.AMI_SLOT,
                     $"We currently do not support {instanceLaunchRequest.AMIType} as a valid AMI ." +
-                    $"Can you try an AMI out of the following ones ?" +
+                    $"Can you try an AMI out of the following ones ? \n" +
                     TypeValidators.ListOfValidAMITypes() ,
                     createResponseCard(Constants.AMI_SLOT)
                                             );
@@ -172,27 +173,28 @@ namespace Chatbot.IntentProcessors
             if (string.IsNullOrEmpty(instanceLaunchRequest.StorageType))
             {
                 return new ValidationResult(false, Constants.STORAGE_TYPE_SLOT,
-                    $"Please enter the Storage type you want to use . I currently support the following : \n {TypeValidators.ListOfValidStorageTypes()}");
+                    "Please enter the Storage type you want to use ." ,
+                    createResponseCard(Constants.STORAGE_TYPE_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.StorageType) && !TypeValidators.IsValidStorageType(instanceLaunchRequest.StorageType))
             {
                 return new ValidationResult(false, Constants.STORAGE_TYPE_SLOT,
-                    $"We currently do not support {instanceLaunchRequest.StorageType} as a valid Storage Type ." +
-                    $"Can you try a Storage Type out of the following ones ? \n" +
-                    TypeValidators.ListOfValidStorageTypes()
+                    $"I currently do not support {instanceLaunchRequest.StorageType} as a valid Storage Type ." +
+                    "Can you try a Storage Type out of the following ones ?",
+                    createResponseCard(Constants.STORAGE_TYPE_SLOT)
                         );
             }
 
             if (string.IsNullOrEmpty(instanceLaunchRequest.InstanceType))
             {
                 return new ValidationResult(false, Constants.INSTANCE_TYPE_SLOT,
-                    $"Please enter the Instance type you want to use . I currently support the following : \n {TypeValidators.ListOfValidInstanceTypes()}" ,
+                    "Please enter the Instance type you want to use ." ,
                     createResponseCard(Constants.INSTANCE_TYPE_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.InstanceType) && !TypeValidators.IsValidInstanceType(instanceLaunchRequest.InstanceType))
             {
                 return new ValidationResult(false, Constants.INSTANCE_TYPE_SLOT,
-                    $"We currently do not support {instanceLaunchRequest.InstanceType} as a valid Instance Type ." +
+                    $"I currently do not support {instanceLaunchRequest.InstanceType} as a valid Instance Type ." +
                     $"Can you try a Instance Type out of the following ones ? {TypeValidators.ListOfValidInstanceTypes()}",
                         createResponseCard(Constants.INSTANCE_TYPE_SLOT));
             }
@@ -200,13 +202,15 @@ namespace Chatbot.IntentProcessors
             if (string.IsNullOrEmpty(instanceLaunchRequest.AvailabilityZone))
             {
                 return new ValidationResult(false, Constants.AZ_SLOT,
-                    $"Please enter the AZ you want to use . List of AZ(s) for your region are : \n {string.Join(" \n ",serverOperationsHelper.getAvailabilityZones())}");
+                                           "Please enter the AZ you want to use .",
+                                           createResponseCard(Constants.AZ_SLOT));
             }
             if (!string.IsNullOrEmpty(instanceLaunchRequest.AvailabilityZone) && !serverOperationsHelper.getAvailabilityZones().Contains(instanceLaunchRequest.AvailabilityZone))
             {
                 return new ValidationResult(false, Constants.AZ_SLOT,
                     $" {instanceLaunchRequest.AvailabilityZone} is not a valid Availability Zone for your region ." +
-                    $"Can you try a AZ out of the following ones ? {serverOperationsHelper.getAvailabilityZones()}" );
+                    "Can you try a AZ out of the following ones ? ",
+                    createResponseCard(Constants.AZ_SLOT));
             }
 
             if (instanceLaunchRequest.NumOfInstances == 0)
@@ -222,70 +226,6 @@ namespace Chatbot.IntentProcessors
                     createResponseCard(Constants.NUMBER_TYPE_SLOT));
             }
             return ValidationResult.VALID_RESULT;
-        }
-
-        private LexResponse.LexResponseCard createResponseCard(string SlotType)
-        {
-            LexResponse.LexResponseCard card = new LexResponse.LexResponseCard();
-            List<LexResponse.LexButton> cardButtons = new List<LexResponse.LexButton>();
-            LexResponse.LexGenericAttachments cardGenericAttachments = new LexResponse.LexGenericAttachments();
-
-            switch (SlotType)
-            {
-                case Constants.NUMBER_TYPE_SLOT:
-                    card.Version = 1;
-                    card.ContentType = "application/vnd.amazonaws.card.generic";                    
-                    cardGenericAttachments.Title = "Instance count";
-                    cardGenericAttachments.SubTitle = "Select the number of instances to launch";
-                    cardButtons = new List<LexResponse.LexButton>()
-                    {
-                        new LexResponse.LexButton(){Text = "1" , Value = "1"},
-                        new LexResponse.LexButton(){Text = "2" , Value = "2"},
-                        new LexResponse.LexButton(){Text = "3" , Value = "3"},
-                        new LexResponse.LexButton(){Text = "4" , Value = "4"},
-                        new LexResponse.LexButton(){Text = "5" , Value = "5"},
-                    };
-                    cardGenericAttachments.Buttons = cardButtons;
-                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
-                                                                            { cardGenericAttachments };
-                    return card;
-
-                case Constants.INSTANCE_TYPE_SLOT:
-                    card.Version = 1;
-                    card.ContentType = "application/vnd.amazonaws.card.generic";
-                    cardGenericAttachments.Title = "Instance Types";
-                    cardGenericAttachments.SubTitle = "Choose an instance type";
-                    cardGenericAttachments.ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/AWS_Simple_Icons_Compute_Amazon_EC2_Instances.svg/200px-AWS_Simple_Icons_Compute_Amazon_EC2_Instances.svg.png";
-                    cardButtons = new List<LexResponse.LexButton>()
-                    {
-                        new LexResponse.LexButton(){Text = "t2micro" , Value = "t2micro"},
-                        new LexResponse.LexButton(){Text = "t2small" , Value = "t2small"},
-                        new LexResponse.LexButton(){Text = "t2medium" , Value = "t2medium"}
-                    };
-                    cardGenericAttachments.Buttons = cardButtons;
-                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
-                                                                            { cardGenericAttachments };
-                    return card;
-
-                case Constants.AMI_SLOT:
-                    card.Version = 1;
-                    card.ContentType = "application/vnd.amazonaws.card.generic";
-                    cardGenericAttachments.Title = "AMI";
-                    cardGenericAttachments.SubTitle = "Choose an AMI type";
-                    cardGenericAttachments.ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/AWS_Simple_Icons_Compute_Amazon_EC2_AMI.svg/2000px-AWS_Simple_Icons_Compute_Amazon_EC2_AMI.svg.png";
-                    cardButtons = new List<LexResponse.LexButton>()
-                    {
-                        new LexResponse.LexButton(){Text = "Ubuntu" , Value = "Ubuntu"},
-                        new LexResponse.LexButton(){Text = "Red Hat" , Value = "Red Hat"},
-                        new LexResponse.LexButton(){Text = "Windows" , Value = "Windows"},
-                        new LexResponse.LexButton(){Text = "Amazon Linux" , Value = "Amazon Linux"},
-                    };
-                    cardGenericAttachments.Buttons = cardButtons;
-                    card.GenericAttachments = new List<LexResponse.LexGenericAttachments>()
-                                                                            { cardGenericAttachments };
-                    return card;
-            }
-            return null;
         }
 
         private void OperateAWSServer(InstanceSetup instanceLaunchRequest, ref bool actionSucceeded, ref string actionMessage)

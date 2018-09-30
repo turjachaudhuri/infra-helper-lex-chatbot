@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelperFiles", "HelperFiles"
 	ProjectSection(SolutionItems) = preProject
 		DescribeInstanceEvent.json = DescribeInstanceEvent.json
 		LaunchInstanceConfirmation.json = LaunchInstanceConfirmation.json
+		LaunchInstanceElicitAMISlotSlackResponseCard.json = LaunchInstanceElicitAMISlotSlackResponseCard.json
 		LaunchInstanceElicitNumberSlotSlack.json = LaunchInstanceElicitNumberSlotSlack.json
 		LaunchInstanceElicitSlot.json = LaunchInstanceElicitSlot.json
 		start-ec2-lex-event.json = start-ec2-lex-event.json
