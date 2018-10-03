@@ -24,17 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chatbot", "src\Chatbot\Chat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chatbot.Tests", "test\Chatbot.Test\Chatbot.Tests.csproj", "{6B28DD0E-5B35-4F5A-943A-2C80953B7B3F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelperFiles", "HelperFiles", "{A420EA8D-CD00-4827-8EDF-AD08ACA75D1E}"
-	ProjectSection(SolutionItems) = preProject
-		DescribeInstanceEvent.json = DescribeInstanceEvent.json
-		LaunchInstanceConfirmation.json = LaunchInstanceConfirmation.json
-		LaunchInstanceElicitAMISlotSlackResponseCard.json = LaunchInstanceElicitAMISlotSlackResponseCard.json
-		LaunchInstanceElicitNumberSlotSlack.json = LaunchInstanceElicitNumberSlotSlack.json
-		LaunchInstanceElicitSlot.json = LaunchInstanceElicitSlot.json
-		LaunchInstanceStartEvent.json = LaunchInstanceStartEvent.json
-		start-ec2-lex-event.json = start-ec2-lex-event.json
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,7 +45,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9F62886F-73E6-4CBC-9A90-48BA8B56F13B} = {94965890-D3F6-4FF4-8EA1-73F73E89D19C}
 		{6B28DD0E-5B35-4F5A-943A-2C80953B7B3F} = {6DB7C3C2-84DC-4DD5-A070-8E3F186E184F}
-		{A420EA8D-CD00-4827-8EDF-AD08ACA75D1E} = {6DB7C3C2-84DC-4DD5-A070-8E3F186E184F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {66B5DCC5-F0EE-4A63-9D8C-28CA1C8FED02}

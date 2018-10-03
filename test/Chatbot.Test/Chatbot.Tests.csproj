@@ -18,4 +18,28 @@
     <ProjectReference Include="..\..\src\Chatbot\Chatbot.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SampleTestFiles\DescribeInstanceEvent.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\LaunchInstanceConfirmation.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\LaunchInstanceElicitAMISlotSlackResponseCard.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\LaunchInstanceElicitNumberSlotSlack.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\LaunchInstanceElicitSlot.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\LaunchInstanceStartEvent.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SampleTestFiles\start-ec2-lex-event.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

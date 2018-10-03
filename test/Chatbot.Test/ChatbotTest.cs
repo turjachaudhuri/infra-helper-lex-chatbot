@@ -20,7 +20,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestFulfillmentCodeHook()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\start-ec2-lex-event.json");
+            var json = File.ReadAllText(@"SampleTestFiles\start-ec2-lex-event.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -34,7 +34,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestDialogCodeHook()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\start-ec2-lex-dialog-code-hook.json");
+            var json = File.ReadAllText(@"SampleTestFiles\start-ec2-lex-dialog-code-hook.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -48,7 +48,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestLaunchInstanceConfirmationEvent()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceConfirmation.json");
+            var json = File.ReadAllText(@"SampleTestFiles\LaunchInstanceConfirmation.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -62,7 +62,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestDescribeInstancesEvent()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\DescribeInstanceEvent.json");
+            var json = File.ReadAllText(@"SampleTestFiles\DescribeInstanceEvent.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -76,7 +76,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestLaunchInstanceElicitSlotEvent()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceElicitSlot.json");
+            var json = File.ReadAllText(@"SampleTestFiles\LaunchInstanceElicitSlot.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -90,7 +90,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestLaunchInstanceElicitNumberSlotEventFromSlack()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceElicitNumberSlotSlack.json");
+            var json = File.ReadAllText(@"SampleTestFiles\LaunchInstanceElicitNumberSlotSlack.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -104,7 +104,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestLaunchInstanceElicitAMISlotWithResponseCard()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceElicitAMISlotSlackResponseCard.json");
+            var json = File.ReadAllText(@"SampleTestFiles\LaunchInstanceElicitAMISlotSlackResponseCard.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
@@ -118,7 +118,7 @@ namespace InfraHelperChatbot.Tests
         [Fact]
         public void TestLaunchInstanceStartEvent()
         {
-            var json = File.ReadAllText(@"C:\\Office\\Projects\\2018\\AWS\\AWS SAM\\LexChatbot\\Chatbot\\LaunchInstanceStartEvent.json");
+            var json = File.ReadAllText(@"SampleTestFiles\LaunchInstanceStartEvent.json");
 
             var lexEvent = JsonConvert.DeserializeObject<LexEvent>(json);
             var lambdaFunction = new ChatbotStartupProgram(true);
